@@ -8,8 +8,6 @@ on:
       - main
     paths:
       - "Client/**"
-env:
-  PUBLISH_LOCATION: "/bin/Release/net9.0/publish/wwwroot"
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
@@ -31,7 +29,7 @@ jobs:
       - name: Build
         run: |
           dotnet workload install wasm-tools
-          dotnet publish -c Release -o $PUBLISH_LOCATION --nologo --no-restore
+          dotnet publish -c Release -o publish --nologo --no-restore
           
       - name: Deploy to firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
