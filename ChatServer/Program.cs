@@ -24,6 +24,6 @@ if (!app.Environment.IsDevelopment())
 app.UseCors("CorsPolicy");
 app.UseRouting();
 // Add authentication or authorization between routing & endpoint
-app.MapGet("/", () => "Change 1");
+app.MapGet("/", () => "Change 2");
 app.MapHub<ChatHub>("/chat");
 app.Run();
