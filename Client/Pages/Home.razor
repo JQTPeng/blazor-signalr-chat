@@ -1,0 +1,129 @@
+﻿@using Microsoft.AspNetCore.SignalR.Client
+@inject ILogger<Home> Logger
+@page "/"
+
+<section class="chat-component">
+    <header>
+        <h1>Blazor SignalR Example</h1>
+        <h2>@_status</h2>
+    </header>
+    <main>
+        <div class="chat-messages">
+            @if (_messages.Count != 0)
+            {
+                foreach (var msg in _messages)
+                {
+                    <div class="message-item">@msg</div>
+                }
+            }
+        </div>
+        <form @onsubmit="SendMessage" class="chat-input">
+            <input type="text" @bind="_message"/>
+            <input type="submit" value="Send"/>
+        </form>
+    </main>
+</section>
+
+@code {
+    private HubConnection? _hubConnection;
+    private readonly List<string> _messages = new();
+    private string _username = "";
+    private string _message = "";
+    private string _status = "Not Connected";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:5207/chat")
+            .WithAutomaticReconnect()
+            .Build();
+
+        RegisterConnectionHandlers();
+        RegisterResponseHandlers();
+
+        try
+        {
+            await _hubConnection.StartAsync();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        if (_hubConnection is not null && _hubConnection?.State == HubConnectionState.Connected)
+        {
+            await _hubConnection.SendAsync("SendMessage", _username, _message);
+            _messages.Add($"{_username}: {_message}");
+            Logger.LogInformation("Event: {e}", $"Sending Message '{_username}: {_message}'");
+        }
+    }
+
+    private void RegisterResponseHandlers()
+    {
+        if (_hubConnection is null)
+        {
+            Logger.LogError("Event: {e}", "RegisterResponseHandlers() '_hubConnection is null'");
+            return;
+        }
+
+        _hubConnection.On<string, string>("OnReceiveMessage", (username, message) =>
+        {
+            _messages.Add($"{username}: {message}");
+            Logger.LogInformation("Event: {e}", $"Receive Message, '{username}: {message}'");
+            StateHasChanged();
+        });
+
+        _hubConnection.On<string>("OnConnectionRejected", (message) => { Logger.LogWarning("Event: {e}", $"Connection Rejected, {message}"); });
+
+        _hubConnection.On<string>("OnConnected", (user) =>
+        {
+            _username = user;
+            _status = "Connected as " + _username;
+            Logger.LogInformation("Event: {e}", _status);
+            StateHasChanged();
+        });
+    }
+
+    private void RegisterConnectionHandlers()
+    {
+        if (_hubConnection is null)
+        {
+            Logger.LogError("Event: {e}", "RegisterConnectionHandlers() '_hubConnection is null'");
+            return;
+        }
+
+        _hubConnection.Reconnecting += async error =>
+        {
+            await InvokeAsync(() =>
+            {
+                _status = "Reconnecting...";
+                Logger.LogInformation("Event: {e}", "Reconnecting to hub");
+                StateHasChanged();
+            });
+        };
+
+        _hubConnection.Reconnected += async error =>
+        {
+            await InvokeAsync(() =>
+            {
+                _status = "Connected as " + _username;
+                Logger.LogInformation("Event: {e}", "Reconnected to hub");
+                StateHasChanged();
+            });
+        };
+
+        _hubConnection.Closed += async error =>
+        {
+            await InvokeAsync(() =>
+            {
+                _status = "Disconnected";
+                Logger.LogInformation("Event: {e}", "Connection Closed");
+                StateHasChanged();
+            });
+        };
+    }
+
+}
