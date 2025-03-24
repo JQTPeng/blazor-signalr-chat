@@ -31,9 +31,6 @@ jobs:
           dotnet workload install wasm-tools
           dotnet publish -c Release -o release
           
-      - name: Setup Firebase
-        run: npm 
-        
       - name: Deploy to firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
