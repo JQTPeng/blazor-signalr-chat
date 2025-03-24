@@ -24,6 +24,6 @@ if (!app.Environment.IsDevelopment())
 app.UseCors("CorsPolicy");
 app.UseRouting();
 // Add authentication or authorization between routing & endpoint
-app.MapGet("/", () => "SignalR Hub");
+app.MapGet("/", () => "Change 1");
 app.MapHub<ChatHub>("/chat");
 app.Run();
