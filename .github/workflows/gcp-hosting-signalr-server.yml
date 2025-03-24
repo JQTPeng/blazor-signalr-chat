@@ -26,4 +26,4 @@ jobs:
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-          audience: 'https://iam.googleapis.com/projects/224480061797/locations/global/workloadIdentityPools/github-actions/providers/github-actions'
+          audience: ${{ secrets.WIF_PROVIDER }}
