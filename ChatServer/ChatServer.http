@@ -1,0 +1,11 @@
+@ChatServer_HostAddress = http://localhost:5269
+
+GET {{ChatServer_HostAddress}}/todos/
+Accept: application/json
+
+###
+
+GET {{ChatServer_HostAddress}}/todos/1
+Accept: application/json
+
+###
