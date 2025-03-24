@@ -30,6 +30,9 @@ jobs:
         run: |
           dotnet workload install wasm-tools
           dotnet publish -c Release -o release
+          
+      - name: Setup Firebase
+        run: npm 
         
       - name: Deploy to firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -38,3 +41,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEBCAMMEETING_FC489 }}
           projectId: webcammeeting-fc489
           entryPoint: './Client/'
+          channelId: live
