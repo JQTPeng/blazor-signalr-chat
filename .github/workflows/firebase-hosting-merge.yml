@@ -25,16 +25,15 @@ jobs:
           
       - name: Install Dependencies
         run: dotnet restore
-        
+          
       - name: Build
-        run: dotnet publish -c Release -o release
+        run: |
+          dotnet workload install wasm-tools
+          dotnet publish -c Release -o release
         
-      - name: Debug 
-        run: ls -R out
-        
-#      - name: Deploy to firebase
-#        uses: FirebaseExtended/action-hosting-deploy@v0
-#        with:
-#          repoToken: ${{ secrets.GITHUB_TOKEN }}
-#          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEBCAMMEETING_FC489 }}
-#          projectId: webcammeeting-fc489
+      - name: Deploy to firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEBCAMMEETING_FC489 }}
+          projectId: webcammeeting-fc489
