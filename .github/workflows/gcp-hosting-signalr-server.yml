@@ -2,26 +2,26 @@
 on:
   push:
     branches:
-      - main
+      - 'main'
     paths:
       - "ChatServer/**"
 
 permissions: 
-  id-token: write 
-  contents: read
+  id-token: 'write' 
+  contents: 'read'
   
 jobs:
   build_and_deploy:
-    runs-on: ubuntu-latest
+    runs-on: 'ubuntu-latest'
     defaults: 
       run:
-        working-directory: ChatServer
+        working-directory: 'ChatServer'
         
     steps:
-      - uses: actions/checkout@v4
+      - uses: 'actions/checkout@v4'
           
-      - name: Authenticate to GCP
-        uses: google-github-actions/auth@v2
+      - name: 'Authenticate to GCP'
+        uses: 'google-github-actions/auth@v2'
         with:
-          workload_identity_provider: "projects/224480061797/locations/global/workloadIdentityPools/github-actions"
-          service_account: "github-actions@webcammeeting-fc489.iam.gserviceaccount.com"
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
