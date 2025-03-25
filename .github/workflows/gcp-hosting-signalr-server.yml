@@ -25,4 +25,4 @@ jobs:
         with:
           workload_identity_provider: 'projects/224480061797/locations/global/workloadIdentityPools/github-actions'
           service_account: 'github-actions@webcammeeting-fc489.iam.gserviceaccount.com'
-          audience: 'https://iam.googleapis.com/projects/224480061797/locations/global/workloadIdentityPools/github-actions/providers/github-actions'
+          audience: 'projects/224480061797/locations/global/workloadIdentityPools/github-actions/providers/github-actions'
