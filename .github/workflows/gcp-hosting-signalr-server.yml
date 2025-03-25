@@ -23,5 +23,6 @@ jobs:
       - name: 'Authenticate to GCP'
         uses: 'google-github-actions/auth@v2'
         with:
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          workload_identity_provider: 'projects/224480061797/locations/global/workloadIdentityPools/github-actions'
+          service_account: 'github-actions@webcammeeting-fc489.iam.gserviceaccount.com'
+          audience: 'https://iam.googleapis.com/projects/224480061797/locations/global/workloadIdentityPools/github-actions/providers/github-actions'
