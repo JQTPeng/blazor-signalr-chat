@@ -20,10 +20,10 @@ jobs:
     steps:
       - uses: 'actions/checkout@v4'
           
+      # Uses auth@v1 instead of v2
       - name: 'Authenticate to GCP'
         uses: 'google-github-actions/auth@v1'
         with:
           project_id: 'webcammeeting-fc489'
           workload_identity_provider: 'projects/224480061797/locations/global/workloadIdentityPools/github-actions'
           service_account: 'github-actions@webcammeeting-fc489.iam.gserviceaccount.com'
-#          audience: 'projects/224480061797/locations/global/workloadIdentityPools/github-actions/providers/github-actions'
