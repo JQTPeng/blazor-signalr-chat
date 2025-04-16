@@ -28,7 +28,7 @@ jobs:
           
       - name: Build
         run: |
-          dotnet workload install wasm-tools
+          dotnet workload restore
           dotnet publish -c Release -o publish --nologo --no-restore
           
       - name: Deploy to firebase
