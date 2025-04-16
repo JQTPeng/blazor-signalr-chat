@@ -25,7 +25,9 @@
                 }
                 else
                 {
-                    <h1>No messages</h1>
+                    <div>
+                        <span>No Messages</span>
+                    </div>
                 }
             </div>
             <form id="chat-form" @onsubmit="SendMessage" class="chat-input">
@@ -222,6 +224,5 @@
         StateHasChanged();
     }
 
-    private string GetUserImage(string username) => $"images/{username.ToLower()}.jpeg";
-
+    private string GetUserImage(string username) => string.IsNullOrEmpty(username) ? "images/disconnected-profile.svg" : $"images/{username.ToLower()}.jpeg";
 }

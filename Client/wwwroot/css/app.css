@@ -156,6 +156,13 @@ body {
     margin: 0 10px 0 30px;
     padding-bottom: 20px;
     align-content: end;
+    
+    div {
+        height: 100%;
+        width: 100%;
+        align-content: center;
+        text-align: center;
+    }
 }
 
 .chat-message-wrap {
