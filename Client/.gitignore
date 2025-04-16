@@ -7,8 +7,6 @@ yarn-error.log*
 firebase-debug.log*
 firebase-debug.*.log*
 
-# Firebase cache
-.firebase/
 
 # Firebase config
 
@@ -67,3 +65,4 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+/publish/
