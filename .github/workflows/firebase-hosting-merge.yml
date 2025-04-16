@@ -38,5 +38,5 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEBCAMMEETING_FC489 }}
           projectId: webcammeeting-fc489
-          entryPoint: './Client/publish'
+          entryPoint: '/home/runner/work/blazor-signalr-chat/blazor-signalr-chat/Client/publish/'
           channelId: live
