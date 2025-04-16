@@ -24,11 +24,12 @@ jobs:
           dotnet-version: '9.0.x'
           
       - name: Install Dependencies
-        run: dotnet restore
+        run: |
+          dotnet workload install wasm-tools
+          dotnet restore
           
       - name: Build
         run: |
-          dotnet workload restore
           dotnet publish -c Release -o publish --nologo --no-restore
           
       - name: Deploy to firebase
