@@ -65,7 +65,7 @@ public class ChatHub(ILogger<ChatHub> logger) : Hub
     public async Task SendMessage(string user, string message)
     {
         logger.LogInformation("Connection Status: {status}, {context}", "SendMessage", Context.ConnectionId);
-        await Clients.Others.SendAsync("OnReceiveMessage", user, message);
+        await Clients.All.SendAsync("OnReceiveMessage", user, message);
     }
 
     public async Task SendHubData()

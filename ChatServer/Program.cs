@@ -7,7 +7,7 @@ builder.Services.AddCors(opts =>
     opts.AddPolicy("CorsPolicy",
         policy =>
         {
-            policy.WithOrigins("http://localhost:8000")
+            policy.WithOrigins("http://localhost:5206")
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });

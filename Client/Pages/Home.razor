@@ -1,37 +1,110 @@
 ﻿@using Microsoft.AspNetCore.SignalR.Client
+@using Client.Enums;
 @inject ILogger<Home> Logger
+@inject IJSRuntime JsRuntime
 @page "/"
 
 <section class="chat-component">
-    <header>
-        <h1>Blazor SignalR Example Change 13</h1>
-        <h2>@_status</h2>
-    </header>
-    <main>
-        <div class="chat-messages">
-            @if (_messages.Count != 0)
-            {
-                foreach (var msg in _messages)
-                {
-                    <div class="message-item">@msg</div>
-                }
-            }
+    <div class="chat-body">
+        <div class="chat-header">
+            <div class="chat-title">Blazor SignalR Example</div>
+            <div class="chat-status">
+                <div style=@_statusIconStyleInfo class="status_icon">
+                </div>
+                <p>@_statusMsg</p>
+            </div>
         </div>
-        <form @onsubmit="SendMessage" class="chat-input">
-            <input type="text" @bind="_message"/>
-            <input type="submit" value="Send"/>
-        </form>
-    </main>
+        <main>
+            <div id="chat-messages" class="chat-messages" style="flex-grow: 1">
+                @if (_messages.Count != 0)
+                {
+                    foreach (var msg in _messages)
+                    {
+                        @msg
+                    }
+                }
+                else
+                {
+                    <h1>No messages</h1>
+                }
+            </div>
+            <form id="chat-form" @onsubmit="SendMessage" class="chat-input">
+                <img id="user-profile-img" src="@GetUserImage(_username)" alt="user-profile"/>
+                <input id="input-message" @bind="_message" @bind:event="oninput" @bind:after="HandleInputChanged"
+                       autocomplete="off" placeholder="Message" type="text"/>
+                <button id="btn-submit" disabled="@_disableSubmit">
+                    <span style="@_submitIconStyle" class="material-symbols-rounded">send</span>
+                </button>
+            </form>
+        </main>
+    </div>
 </section>
 
 @code {
     private HubConnection? _hubConnection;
-    private readonly List<string> _messages = new();
     private string _username = "";
     private string _message = "";
-    private string _status = "Not Connected";
+    private readonly List<RenderFragment> _messages = new();
+    private ChatStatus _status = ChatStatus.NotConnected;
+    private string _statusMsg = "", _statusIconStyleInfo = "";
+    private string _submitIconStyle = "";
+    private bool _disableSubmit = true;
+
+    private async void HandleInputChanged()
+    {
+        await InvokeAsync(() =>
+        {
+            if (string.IsNullOrEmpty(_message))
+            {
+                _submitIconStyle = "color: #3D3D3D;";
+                _disableSubmit = true;
+                return;
+            }
+
+            _submitIconStyle = "color: #F3F3F3;";
+            _disableSubmit = false;
+        });
+    }
+
+    private RenderFragment MessageFragment(string profileImg, string name, string msg)
+    {
+        string style = string.Equals(name, _username) ? "justify-content: flex-end;" : "justify-content: flex-start;";
+        return @<div class="chat-message-wrap" style="@style">
+            <table class="chat-message">
+                <tr>
+                    @if (string.Equals(name, _username))
+                    {
+                        <td id="chat-message-name-cell" style="text-align: right">
+                            <span id="chat-message-name">You</span>
+                        </td>
+                        <td rowspan="2" class="chat-message-img-cell">
+                            <img id="chat-message-img" src="@profileImg" alt="user-profile"/>
+                        </td>
+                    }
+                    else
+                    {
+                        <td rowspan="2">
+                            <img id="chat-message-img" src="@profileImg" alt="user-profile"/>
+                        </td>
+                        <td id="chat-message-name-cell">
+                            <span id="chat-message-name">@name</span>
+                        </td>
+                    }
+                </tr>
+                <tr>
+                    <td id="chat-message-text">@msg</td>
+                </tr>
+            </table>
+        </div>;
+    }
 
     protected override async Task OnInitializedAsync()
+    {
+        ChangeStatusIcon();
+        await InitializeChatHub();
+    }
+
+    private async Task InitializeChatHub()
     {
         _hubConnection = new HubConnectionBuilder()
             .WithUrl("https://localhost:5207/chat")
@@ -41,13 +114,15 @@
         RegisterConnectionHandlers();
         RegisterResponseHandlers();
 
+        // Connect with reconnection
         try
         {
             await _hubConnection.StartAsync();
+            return;
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            Logger.LogInformation("Failed to connect: {e}", e);
         }
     }
 
@@ -56,7 +131,6 @@
         if (_hubConnection is not null && _hubConnection?.State == HubConnectionState.Connected)
         {
             await _hubConnection.SendAsync("SendMessage", _username, _message);
-            _messages.Add($"{_username}: {_message}");
             Logger.LogInformation("Event: {e}", $"Sending Message '{_username}: {_message}'");
         }
     }
@@ -69,11 +143,12 @@
             return;
         }
 
-        _hubConnection.On<string, string>("OnReceiveMessage", (username, message) =>
+        _hubConnection.On<string, string>("OnReceiveMessage", async (username, message) =>
         {
-            _messages.Add($"{username}: {message}");
+            _messages.Add(MessageFragment(GetUserImage(username), username, message));
             Logger.LogInformation("Event: {e}", $"Receive Message, '{username}: {message}'");
             StateHasChanged();
+            await JsRuntime.InvokeVoidAsync("scrollToBottom", "chat-messages");
         });
 
         _hubConnection.On<string>("OnConnectionRejected", (message) => { Logger.LogWarning("Event: {e}", $"Connection Rejected, {message}"); });
@@ -81,9 +156,9 @@
         _hubConnection.On<string>("OnConnected", (user) =>
         {
             _username = user;
-            _status = "Connected as " + _username;
+            _status = ChatStatus.Connected;
             Logger.LogInformation("Event: {e}", _status);
-            StateHasChanged();
+            ChangeStatusIcon();
         });
     }
 
@@ -95,23 +170,23 @@
             return;
         }
 
-        _hubConnection.Reconnecting += async error =>
-        {
-            await InvokeAsync(() =>
-            {
-                _status = "Reconnecting...";
-                Logger.LogInformation("Event: {e}", "Reconnecting to hub");
-                StateHasChanged();
-            });
-        };
-
         _hubConnection.Reconnected += async error =>
         {
             await InvokeAsync(() =>
             {
-                _status = "Connected as " + _username;
-                Logger.LogInformation("Event: {e}", "Reconnected to hub");
-                StateHasChanged();
+            Logger.LogInformation("Event: {t}, {e}", "Reconnected to hub", error);
+            _status = ChatStatus.Connected;
+            ChangeStatusIcon();
+            });
+        };
+
+        _hubConnection.Reconnecting += async error =>
+        {
+            await InvokeAsync(() =>
+            {
+                Logger.LogInformation("Event: {t}, {e}", "Reconnecting to hub", error);
+                _status = ChatStatus.Reconnecting;
+                ChangeStatusIcon();
             });
         };
 
@@ -119,11 +194,34 @@
         {
             await InvokeAsync(() =>
             {
-                _status = "Disconnected";
-                Logger.LogInformation("Event: {e}", "Connection Closed");
-                StateHasChanged();
+                Logger.LogInformation("Event: {t}, {e}", "Connection Closed", error);
+                _status = ChatStatus.NotConnected;
+                ChangeStatusIcon();
             });
         };
     }
+
+    private void ChangeStatusIcon()
+    {
+        switch (_status)
+        {
+            case ChatStatus.Connected:
+                _statusMsg = "Connected as " + _username;
+                _statusIconStyleInfo = "background: linear-gradient(#C0FFD3, #00D941, #007322);";
+                break;
+            case ChatStatus.Reconnecting:
+                _statusMsg = "Reconnecting...";
+                _statusIconStyleInfo = "background: linear-gradient(#FFF7E6, #FF9900, #734F00);";
+                break;
+            default:
+                _statusMsg = "Not Connected";
+                _statusIconStyleInfo = "background: linear-gradient(#FFE6E6, #FF0000, #730000);";
+                break;
+        }
+
+        StateHasChanged();
+    }
+
+    private string GetUserImage(string username) => $"images/{username.ToLower()}.jpeg";
 
 }
