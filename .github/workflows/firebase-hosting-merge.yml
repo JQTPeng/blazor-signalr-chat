@@ -30,7 +30,7 @@ jobs:
           
       - name: Build
         run: |
-          dotnet publish -c Release -o publish --nologo --no-restore
+          dotnet publish ./Client/Client.csproj -c Release -o publish --nologo --no-restore
           
       - name: Deploy to firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -38,5 +38,5 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEBCAMMEETING_FC489 }}
           projectId: webcammeeting-fc489
-          entryPoint: '/home/runner/work/blazor-signalr-chat/blazor-signalr-chat/Client/publish/'
+          entryPoint: '/home/runner/work/blazor-signalr-chat/blazor-signalr-chat/Client/'
           channelId: live
