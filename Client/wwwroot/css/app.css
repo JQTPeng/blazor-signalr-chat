@@ -77,15 +77,16 @@ body {
 
     .chat-title {
         /* Box Model */
-        margin: 10px 0 10px 0;
+        margin: 20px 0 10px 0;
         /* Text */
         font-weight: 400;
-        font-size: 2em;
+        font-size: 1.7em;
     }
 
     .chat-status {
         /* Box Model */
         margin: 0 0 20px 0;
+        height: min-content;
 
         /* Layout */
         display: flex;
@@ -94,6 +95,10 @@ body {
 
         /* Text */
         font-size: 1em;
+        
+        p {
+            margin: 0;
+        }
     }
 
     .status_icon {
